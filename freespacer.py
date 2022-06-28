@@ -18,13 +18,13 @@ parser.add_argument('output', type=str,
 
 # don't mess with these unless you know what you're doing.
 window_size = 2**12
-stride_size = 2**9
-n = 4
+stride_size = 2**8
+n = 8
 
 # these should probably be parameters to pass, but can't be fucked rn lmao
 
-smoothing = 64
-rolloff = 64
+smoothing = 24
+rolloff = 24
 slope_factor = 0.5
 antialias = 64
 threshold = -40.0
@@ -56,10 +56,13 @@ coswin.div_(coswin.max()).pow(n-1).div(correction)
 sample_rate_spectrum, spectrum = wavfile.read(args.spectrum)
 sample_rate_target, target = wavfile.read(args.target)
 
+
 spectrum = torch.from_numpy(spectrum).float().t().unsqueeze(0)
 spectrum.div_(spectrum.abs().max())
 target = torch.from_numpy(target).float().t().unsqueeze(0)
-
+print(spectrum.shape)
+spectrum = F.pad(spectrum, (window_size, window_size))
+target = F.pad(target, (window_size, window_size))
 
 if spectrum.shape[-1] > target.shape[-1]:
     zeros = torch.zeros(spectrum.shape)
@@ -75,6 +78,10 @@ spectrum_shape = spectrum.shape
 spectrum = F.unfold(spectrum.transpose(0,1).unsqueeze(-1), [(window_size),1], stride=[stride_size,1]).squeeze(-1).transpose(1,2)
 spectrum = torch.fft.rfft(spectrum, dim=-1, norm='forward')
 spectrum_mag = spectrum.real.pow(2).add(spectrum.imag.pow(2)).pow(0.5)
+print(spectrum_mag.max(), 'max spectrum value')
+print(spectrum_mag.max().log10()*20, 'dbfs max')
+print(spectrum_mag.mean(), 'mean spectrum value')
+print(spectrum_mag.mean().log10()*20, 'dbfs mean')
 spectrum_mag = torch.fft.rfft(spectrum_mag, dim=-1, norm='ortho')
 spectrum_mag[:,:,smoothing:].mul_(0)
 spectrum_mag[:,:,smoothing-rolloff:smoothing].mul_(rolloff_window)
@@ -103,5 +110,6 @@ target.imag = target_mag*torch.cos(target_phase)
 target = torch.fft.irfft(target, n=window_size, norm='forward').mul(coswin)
 target = F.fold(target.transpose(1,2), [target_shape[-1], 1], [window_size,1], stride=[stride_size,1]).squeeze()
 target.div_(target.abs().max())
-wavfile.write(args.output, sample_rate_target, target.numpy().transpose().astype('float32'))
+print(target.shape)
+wavfile.write(args.output, sample_rate_target, target[:,window_size:-window_size].numpy().transpose().astype('float32'))
 exit()
