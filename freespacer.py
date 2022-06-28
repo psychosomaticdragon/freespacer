@@ -23,11 +23,11 @@ n = 4
 
 # these should probably be parameters to pass, but can't be fucked rn lmao
 
-smoothing = 16
-rolloff = 16
+smoothing = 256
+rolloff = 256
 slope_factor = 0.5
 antialias = 64
-threshold = -40.0
+threshold = -60.0
 ratio = 16.0
 
 
@@ -94,6 +94,7 @@ target_mag.mul_(slope)
 target_mag = target_mag.add(1e-7).log10().mul(20).add(-spectrum_mag*(1-1/ratio))
 target_mag = 10**(target_mag/20).add(-1e-7)
 target_mag.div_(slope)
+target_mag[:,:,-antialias:].mul_(antialias_window)
 
 target_phase = torch.atan2(target.real, target.imag)
 target.real = target_mag*torch.sin(target_phase)
