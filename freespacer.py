@@ -23,12 +23,12 @@ n = 4
 
 # these should probably be parameters to pass, but can't be fucked rn lmao
 
-smoothing = 256
-rolloff = 256
+smoothing = 64
+rolloff = 64
 slope_factor = 0.5
 antialias = 64
-threshold = -60.0
-ratio = 16.0
+threshold = -40.0
+ratio = 2.0
 
 
 slope = torch.linspace(1, window_size//2+1, window_size//2+1).pow(slope_factor)
