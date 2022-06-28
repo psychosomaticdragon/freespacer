@@ -83,7 +83,7 @@ spectrum_mag.add_(-spectrum_mag.min())
 spectrum_mag[:,:,-antialias:].mul_(antialias_window)
 spectrum_mag.mul_(slope)
 
-spectrum_mag = spectrum_mag.add(1e-7).log10().mul(20)
+spectrum_mag = spectrum_mag.add(1e-7).log10().mul(20).clamp(threshold)
 spectrum_mag.add_(-spectrum_mag.min())
 
 target_shape = target.shape
