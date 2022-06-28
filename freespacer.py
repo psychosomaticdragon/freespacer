@@ -15,11 +15,14 @@ parser.add_argument('target', type=str,
 parser.add_argument('output', type=str,
                     help='output filename')
                     
-# these should probably be parameters to pass, but can't be fucked rn lmao
 
+# don't mess with these unless you know what you're doing.
 window_size = 2**12
 stride_size = 2**9
 n = 4
+
+# these should probably be parameters to pass, but can't be fucked rn lmao
+
 smoothing = 16
 rolloff = 16
 slope_factor = 0.5
